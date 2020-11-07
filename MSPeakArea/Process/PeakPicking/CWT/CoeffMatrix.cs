@@ -16,9 +16,10 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         private double snr; //signale-to-noise ratio
         private double percent; // the percentile for noise
         private double snrWindow; // the window size for percentile 
+        private int minLength; // the min length of the ridge line
 
         public CoeffMatrix(List<double> t, SortedDictionary<double, List<double>> matrix,
-            double window=-1, double thresh=-1, double snr = 1.0,
+            double window = -1, double thresh = -1, double snr = 1.0, int minLength = 2,
             double percent=0.95,  double snrWindow=1.0)
         {
             this.t = t;
@@ -29,7 +30,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             this.snrWindow = snrWindow;
             this.snr = snr;
             this.percent = percent;
-            
+            this.minLength = minLength;
             this.thresh = thresh;
             if (thresh < 0)
                 this.thresh = matrix.Keys.Min();
@@ -136,6 +137,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             foreach(RidgeLine l in lines)
             {
                 l.Gap += 1;
+                l.Length += 1;
             }
             // try to extend the lines
             foreach (int p in local)
@@ -211,6 +213,9 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             // merge lines at the same position
             foreach(RidgeLine line in final)
             {
+                if (line.Length < minLength)
+                    continue;
+
                 if (filtered.Count == 0)
                 {
                     if (SNR(line) > snr)

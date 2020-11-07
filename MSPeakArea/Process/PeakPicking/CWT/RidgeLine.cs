@@ -19,7 +19,6 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         { 
             Pos = pos;
             Gap = 0;
-            Length = 1;
             Index = new List<int>() { indx };
             Trace = new List<double>() { pos };
         }
@@ -28,7 +27,6 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         {
             Pos = pos;
             Gap = 0;
-            Length += 1;
             Index.Add(indx);
             Trace.Add(pos);
         }

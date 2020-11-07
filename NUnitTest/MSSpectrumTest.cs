@@ -41,7 +41,7 @@ namespace NUnitTest
                     double[] signal = peaks.Select(p => p.GetIntensity()).ToArray();
                     SortedDictionary<double, List<double>> matrix = 
                         new SortedDictionary<double, List<double>>();
-                    for (double a = 1; a <= 64; a += 4)
+                    for (double a = 1; a <= 120; a += 6)
                     {
                         double[] processed = CWT.Transform(signal, a);
                         matrix[a] = processed.ToList();
@@ -49,7 +49,7 @@ namespace NUnitTest
 
                     CoeffMatrix coeffMatrix = new CoeffMatrix(
                         spectrum.GetPeaks().Select(p => p.GetMZ()).ToList(),
-                        matrix, 1.0, 2);
+                        matrix, 1.0, 2, 1, 2);
 
                     List<RidgeLine> lines = coeffMatrix.FindRidgeLine();
                     Console.WriteLine(lines.Count);
