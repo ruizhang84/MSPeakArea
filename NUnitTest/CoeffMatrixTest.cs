@@ -63,7 +63,7 @@ namespace NUnitTest
 
             SortedDictionary<double, List<double>> matrix =
                 new SortedDictionary<double, List<double>>();
-            for (int a = 2; a <= 5; a += 1)
+            for (int a = 1; a <= 5; a += 1)
             {
                 double[] processed = CWT.Transform(signal, a);
                 matrix[a] = processed.ToList();

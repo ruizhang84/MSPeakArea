@@ -13,21 +13,26 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         private List<RidgeLine> lines;
         private List<RidgeLine> finalLines;
         private double thresh; // gap number threshold
-        private int minLength; // min ridgeline length
+        private double snr; //signale-to-noise ratio
+        private double percent; // the percentile for noise
+        private double snrWindow; // the window size for percentile 
 
         public CoeffMatrix(List<double> t, SortedDictionary<double, List<double>> matrix,
-            double window=-1, double thresh=-1, int minLength=4)
+            double window=-1, double thresh=-1, double snr = 1.0,
+            double percent=0.95,  double snrWindow=1.0)
         {
             this.t = t;
             this.matrix = matrix;
             lines = new List<RidgeLine>();
             finalLines = new List<RidgeLine>();
             this.window = window;
+            this.snrWindow = snrWindow;
+            this.snr = snr;
+            this.percent = percent;
             
             this.thresh = thresh;
             if (thresh < 0)
                 this.thresh = matrix.Keys.Min();
-            this.minLength = minLength;
         }
 
         public List<double> Coeffcient (double scale)
@@ -142,7 +147,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
                     new_lines.Add(new RidgeLine(t[p], indx));
                 else
                 {
-                    lines[i].Add(p, indx);
+                    lines[i].Add(t[p], indx);
                 }
             }
             // remove lines if they are over gapping
@@ -157,6 +162,46 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             }
             lines = new_lines;
         }
+        public static double Percentile(IEnumerable<double> seq, double percentile)
+        {
+            var elements = seq.ToArray();
+            Array.Sort(elements);
+            double realIndex = percentile * (elements.Length - 1);
+            int index = (int)realIndex;
+            double frac = realIndex - index;
+            if (index + 1 < elements.Length)
+                return elements[index] * (1 - frac) + elements[index + 1] * frac;
+            else
+                return elements[index];
+        }
+
+        private double SNR(RidgeLine line)
+        {
+            double strength = 0;
+            int index = t.IndexOf(line.Pos);
+            foreach(var item in matrix)
+            {
+                strength = Math.Max(strength, item.Value[index]); 
+            }
+
+            List<double> coeff = matrix[1.0];
+            List<double> coeffList = new List<double>();
+            for(int i = index; i < coeff.Count; i++)
+            {
+                if (t[i] - t[index] > snrWindow)
+                    break;
+                coeffList.Add(Math.Abs(coeff[i]));
+            }
+            for(int i = index-1; i >= 0; i--)
+            {
+                if (t[index] - t[i] > snrWindow)
+                    break;
+                coeffList.Add(Math.Abs(coeff[i]));
+            }
+            double noise = Math.Max(0.001, Percentile(coeffList, percent));
+
+            return strength / noise;
+        }
 
         public List<RidgeLine> FilterRidgeLine(List<RidgeLine> final)
         {
@@ -166,23 +211,22 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             // merge lines at the same position
             foreach(RidgeLine line in final)
             {
-                // line lengh 
-                //if (line.Length < minLength) continue;
-
                 if (filtered.Count == 0)
                 {
-                    filtered.Add(line);
+                    if (SNR(line) > snr)
+                        filtered.Add(line);
                 }
                 else if (filtered.Last().Pos == line.Pos )
                 {
-                    if (filtered.Last().Length < line.Length)
+                    if (filtered.Last().Length < line.Length && SNR(line) > snr)
                     {
                         filtered[filtered.Count - 1] = line;
                     }
                 }
                 else
                 {
-                    filtered.Add(line);
+                    if (SNR(line) > snr)
+                        filtered.Add(line);
                 }
             }
 
