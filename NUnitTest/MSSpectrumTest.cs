@@ -9,6 +9,7 @@ using MSPeakArea.Spectrum;
 using NUnit.Framework;
 using MSPeakArea.Algorithm;
 using MSPeakArea.Process.PeakPicking.CWT;
+using MSPeakArea.Process;
 
 namespace NUnitTest
 {
@@ -67,5 +68,31 @@ namespace NUnitTest
             Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
             //Console.Read();
         }
+
+        [Test]
+        public void test2()
+        {
+            string path = @"C:\Users\Rui Zhang\Downloads\Serum_1_C18_03292019_Ali.raw";
+
+            ISpectrumReader reader = new ThermoRawSpectrumReader();
+            reader.Init(path);
+
+            IProcess processer = new PeakPickingCWT();
+
+            //for (int i = reader.GetFirstScan(); i < reader.GetLastScan(); i++)
+            int i = 342;
+            {
+                if (reader.GetMSnOrder(i) < 2)
+                {
+                    ISpectrum spectrum = reader.GetSpectrum(i);
+                    processer.Process(spectrum);
+                    foreach (var peak in spectrum.GetPeaks())
+                    {
+                        Console.WriteLine(peak.GetMZ().ToString() + ": " + peak.GetIntensity().ToString());
+                    }
+                }
+            }
+        }
+
     }
 }
