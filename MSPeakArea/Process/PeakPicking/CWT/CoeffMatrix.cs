@@ -16,7 +16,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         private int minLength; // min ridgeline length
 
         public CoeffMatrix(List<double> t, SortedDictionary<double, List<double>> matrix,
-            double window=-1, double thresh=-1, int minLength=7)
+            double window=-1, double thresh=-1, int minLength=4)
         {
             this.t = t;
             this.matrix = matrix;
@@ -116,7 +116,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             {
                 foreach(int pos in local)
                 {
-                    lines.Add(new RidgeLine(pos, indx));
+                    lines.Add(new RidgeLine(t[pos], indx));
                 }
                 return;
             }
@@ -139,7 +139,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
                     lines.Select(l => l.Pos).ToList(),
                     p, winSize);
                 if (i == -1)
-                    new_lines.Add(new RidgeLine(p, indx));
+                    new_lines.Add(new RidgeLine(t[p], indx));
                 else
                 {
                     lines[i].Add(p, indx);
@@ -158,40 +158,36 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             lines = new_lines;
         }
 
-        //private bool TryExtend( List<double> localPos)
-        //{   
-        //    int idx = BinarySearch.Search(localPos, line.Pos, window);
-        //    if (idx == -1) return false;
+        public List<RidgeLine> FilterRidgeLine(List<RidgeLine> final)
+        {
+            List<RidgeLine> filtered = new List<RidgeLine>();
+            final.Sort();
 
-        //    line.Add(localPos[idx]);
-        //    return true;
-        //}
+            // merge lines at the same position
+            foreach(RidgeLine line in final)
+            {
+                // line lengh 
+                //if (line.Length < minLength) continue;
 
-        //private List<RidgeLine> UniqueLines(List<RidgeLine> lines)
-        //{
+                if (filtered.Count == 0)
+                {
+                    filtered.Add(line);
+                }
+                else if (filtered.Last().Pos == line.Pos )
+                {
+                    if (filtered.Last().Length < line.Length)
+                    {
+                        filtered[filtered.Count - 1] = line;
+                    }
+                }
+                else
+                {
+                    filtered.Add(line);
+                }
+            }
 
-        //    if (lines.Count < 2) return lines;
-        //    List<RidgeLine> unique = new List<RidgeLine>();
-        //    RidgeLine curr = lines[0];
-        //    for(int i = 1; i < lines.Count; i++)
-        //    {
-        //        if (lines[i].Pos == curr.Pos)
-        //        {
-        //            curr.Length = Math.Max(curr.Length, lines[i].Length);
-        //            curr.Gap = Math.Min(curr.Gap, lines[i].Gap);
-        //        }
-        //        else
-        //        {
-        //            unique.Add(curr);
-        //            curr = lines[i];
-        //        }
-        //    }
-        //    unique.Add(curr);
-
-        //    return unique;
-        //}
-
-
+            return filtered;
+        }
 
         public List<RidgeLine> FindRidgeLine()
         {
@@ -204,8 +200,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
                 IdentifyRidgeLines(scale, indx--);
             }
             finalLines.AddRange(lines);
-            finalLines.Sort();
-            return finalLines;
+            return FilterRidgeLine(finalLines);
         }
 
 

@@ -49,16 +49,13 @@ namespace NUnitTest
 
                     CoeffMatrix coeffMatrix = new CoeffMatrix(
                         spectrum.GetPeaks().Select(p => p.GetMZ()).ToList(),
-                        matrix);
+                        matrix, 1.0, 3, 5);
 
-                    //List<RidgeLine> lines = coeffMatrix.FindRidgeLine();
-                    //foreach(RidgeLine line in lines)
+                    List<RidgeLine> lines = coeffMatrix.FindRidgeLine();
+                    Console.WriteLine(lines.Count);
+                    Console.WriteLine(peaks.Count);
+                    //foreach (RidgeLine line in lines)
                     //{
-                    //    string temp = "";
-                    //    foreach (double v in line.Trace())
-                    //    {
-                    //        temp += v + ",";
-                    //    }
                     //    Console.WriteLine(line.Pos);
                     //}
                 }

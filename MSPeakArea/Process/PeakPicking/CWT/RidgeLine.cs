@@ -9,6 +9,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         // the current position of the line
         public double Pos { get; set; }
         public int Gap { get; set; }
+        public int Length { get; set; }
         // the scale index that line extended
         public List<int> Index { get; set; } = new List<int>();
         // the positions that line extend
@@ -18,6 +19,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         { 
             Pos = pos;
             Gap = 0;
+            Length = 1;
             Index = new List<int>() { indx };
             Trace = new List<double>() { pos };
         }
@@ -26,6 +28,7 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         {
             Pos = pos;
             Gap = 0;
+            Length += 1;
             Index.Add(indx);
             Trace.Add(pos);
         }
