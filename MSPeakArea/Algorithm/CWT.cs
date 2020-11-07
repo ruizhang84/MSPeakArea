@@ -9,20 +9,13 @@ namespace MSPeakArea.Algorithm
 {
     public class CWT
     {
-        public static Complex[] Convolve(Complex[] u, Complex[] v)
+        public static double[] Convolve(double[] u, double[] v)
         {
-            if (u.Length > v.Length)
-            {
-                Complex[] temp = u;
-                u = v;
-                v = temp;
-            }
-
             int m = u.Length;
             int n = v.Length;
             int k = n + m -1;
 
-            Complex[] w = new Complex[k];
+            double[] w = new double[k];
             for (int i = 0; i < k; i++)
             {
                 for (int j = 0; j < m; j++)
@@ -37,23 +30,20 @@ namespace MSPeakArea.Algorithm
             return w.Skip(skip).Take(Math.Max(m, n)).ToArray();
         }
 
-        public static double[] Transform(double[] X, double a)
+        public static double[] Transform(double[] x, double a)
         {
-            // convert to Complex
-            Complex[] x = X.Select(i => new Complex(i, 0)).ToArray();
-            
-            Complex[] points = new Complex[x.Length];
-            for (int i = 0; i < x.Length; i++) 
+
+            int size = (int) Math.Ceiling(Math.Min(10 * a, x.Length));
+            double[] points = new double[size];
+
+            for (int i = 0; i < size; i++) 
             {
-                points[i] = new Complex(i- (x.Length-1)/2.0, 0);
+                points[i] = i-(size-1)/2.0;
             }
-            Complex[] psi = MaxicanHat.Wavelet(points, a)
-                .Select(p => Complex.Conjugate(p)).Reverse().ToArray();
+            double[] psi = MaxicanHat.Wavelet(points, a).Reverse().ToArray();
                  
             // compute convolution of signal and wavelet
-            Complex[] result = Convolve(x, psi);
-
-            return result.Select(p => p.Real).ToArray();
+            return Convolve(x, psi);
         }
 
     }
