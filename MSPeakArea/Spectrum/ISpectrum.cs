@@ -14,5 +14,6 @@ namespace MSPeakArea.Spectrum
         void Clear();
         int GetScanNum();
         double GetRetention();
+        ISpectrum Clone();
     }
 }

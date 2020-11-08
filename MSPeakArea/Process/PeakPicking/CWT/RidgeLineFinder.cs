@@ -1,11 +1,12 @@
-﻿using System;
+﻿using MSPeakArea.Algorithm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace MSPeakArea.Process.PeakPicking.CWT
 {
-    public class CoeffMatrix
+    public class RidgeLineFinder
     {
         private double window; // sliding window
         private List<double> t; // time series
@@ -18,12 +19,10 @@ namespace MSPeakArea.Process.PeakPicking.CWT
         private double snrWindow; // the window size for percentile 
         private int minLength; // the min length of the ridge line
 
-        public CoeffMatrix(List<double> t, SortedDictionary<double, List<double>> matrix,
+        public RidgeLineFinder(
             double window = -1, double thresh = -1, double snr = 1.0, int minLength = 2,
             double percent=0.95,  double snrWindow=1.0)
         {
-            this.t = t;
-            this.matrix = matrix;
             lines = new List<RidgeLine>();
             finalLines = new List<RidgeLine>();
             this.window = window;
@@ -32,8 +31,18 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             this.percent = percent;
             this.minLength = minLength;
             this.thresh = thresh;
-            if (thresh < 0)
-                this.thresh = matrix.Keys.Min();
+        }
+
+        public void SetParameter(double window = -1, double thresh = -1, 
+            double snr = 1.0, int minLength = 2,
+            double percent = 0.95, double snrWindow = 1.0)
+        {
+            this.window = window;
+            this.snrWindow = snrWindow;
+            this.snr = snr;
+            this.percent = percent;
+            this.minLength = minLength;
+            this.thresh = thresh;
         }
 
         public List<double> Coeffcient (double scale)
@@ -238,11 +247,22 @@ namespace MSPeakArea.Process.PeakPicking.CWT
             return filtered;
         }
 
-        public List<RidgeLine> FindRidgeLine()
+        public void Init(List<double> t, SortedDictionary<double, List<double>> matrix)
         {
-            int indx = matrix.Count-1;
             lines.Clear();
             finalLines.Clear();
+            this.t = t;
+            this.matrix = matrix;
+            if (thresh < 0)
+               thresh = matrix.Keys.Min();
+        }
+
+        public List<RidgeLine> Find(List<double> t, SortedDictionary<double, List<double>> matrix)
+        {
+            // init
+            Init(t, matrix);
+
+            int indx = matrix.Count - 1;
             foreach (var item in matrix.Reverse())
             {
                 double scale = item.Key;

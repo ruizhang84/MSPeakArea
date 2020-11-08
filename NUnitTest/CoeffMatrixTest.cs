@@ -25,7 +25,8 @@ namespace NUnitTest
                 = new SortedDictionary<double, List<double>>();
             matrix[1] = coeff;
 
-            CoeffMatrix processor = new CoeffMatrix(t, matrix, 4);
+            RidgeLineFinder processor = new RidgeLineFinder(4);
+            processor.Init(t, matrix);
             List<int> pos = processor.LocalMaxamIndexes(1);
 
             Console.WriteLine(pos.Count);
@@ -69,8 +70,8 @@ namespace NUnitTest
                 matrix[a] = processed.ToList();
             }
 
-            CoeffMatrix coeffMatrix = new CoeffMatrix(t, matrix);
-            List<RidgeLine> lines = coeffMatrix.FindRidgeLine();
+            RidgeLineFinder coeffMatrix = new RidgeLineFinder();
+            List<RidgeLine> lines = coeffMatrix.Find(t, matrix);
             foreach(var item in lines)
             {
                 Console.WriteLine(item.Pos);

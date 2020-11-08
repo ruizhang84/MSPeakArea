@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MSPeakArea.Process.PeakPicking.CWT
+namespace MSPeakArea.Algorithm
 {
-    class BinarySearch
+    public class BinarySearch
     {
         private static int Compare(double curr, double target, double tol)
         {
-            if (Math.Abs(curr - target) < tol) return 0;
+            if (Math.Abs(curr - target) <= tol) return 0;
             if (curr > target)
                 return 1;
             return -1;

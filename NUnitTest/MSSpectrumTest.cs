@@ -33,6 +33,7 @@ namespace NUnitTest
 
             //for (int i = reader.GetFirstScan(); i < reader.GetLastScan(); i++)
             int i = 342;
+            RidgeLineFinder coeffMatrix = new RidgeLineFinder(1.0, 2, 1, 2);
             {
                 if (reader.GetMSnOrder(i) < 2)  
                 {
@@ -48,11 +49,8 @@ namespace NUnitTest
                         matrix[a] = processed.ToList();
                     }
 
-                    CoeffMatrix coeffMatrix = new CoeffMatrix(
-                        spectrum.GetPeaks().Select(p => p.GetMZ()).ToList(),
-                        matrix, 1.0, 2, 1, 2);
-
-                    List<RidgeLine> lines = coeffMatrix.FindRidgeLine();
+                    List<RidgeLine> lines = coeffMatrix.Find(spectrum.GetPeaks().Select(p => p.GetMZ()).ToList(),
+                        matrix);
                     Console.WriteLine(lines.Count);
                     Console.WriteLine(peaks.Count);
                     foreach (RidgeLine line in lines)
@@ -76,8 +74,8 @@ namespace NUnitTest
 
             ISpectrumReader reader = new ThermoRawSpectrumReader();
             reader.Init(path);
-
-            IProcess processer = new PeakPickingCWT();
+            RidgeLineFinder coeffMatrix = new RidgeLineFinder(1.0, 2, 1, 2);
+            IProcess processer = new PeakPickingCWT(coeffMatrix);
 
             //for (int i = reader.GetFirstScan(); i < reader.GetLastScan(); i++)
             int i = 342;
@@ -85,7 +83,7 @@ namespace NUnitTest
                 if (reader.GetMSnOrder(i) < 2)
                 {
                     ISpectrum spectrum = reader.GetSpectrum(i);
-                    processer.Process(spectrum);
+                    spectrum = processer.Process(spectrum);
                     foreach (var peak in spectrum.GetPeaks())
                     {
                         Console.WriteLine(peak.GetMZ().ToString() + ": " + peak.GetIntensity().ToString());

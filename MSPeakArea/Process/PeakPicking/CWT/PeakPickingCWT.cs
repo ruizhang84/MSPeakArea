@@ -10,8 +10,11 @@ namespace MSPeakArea.Process.PeakPicking.CWT
     {
         private double maxScale;
         private double steps;
-        public PeakPickingCWT(double maxScale=120, double steps=6)
+        private RidgeLineFinder finder;
+
+        public PeakPickingCWT(RidgeLineFinder finder, double maxScale=120, double steps=6)
         {
+            this.finder = finder;
             this.maxScale = maxScale;
             this.steps = steps;
         }
@@ -28,16 +31,15 @@ namespace MSPeakArea.Process.PeakPicking.CWT
                 matrix[a] = processed.ToList();
             }
 
-            CoeffMatrix coeffMatrix = new CoeffMatrix(
+            List<RidgeLine> lines = finder.Find(
                 spectrum.GetPeaks().Select(p => p.GetMZ()).ToList(),
-                matrix, 1.0, 2, 1, 2);
-
-            List<RidgeLine> lines = coeffMatrix.FindRidgeLine();
+                matrix);
             HashSet<double> mz = lines.Select(p => p.Pos).ToHashSet();
 
             List<IPeak> processedPeaks = peaks.Where(p => mz.Contains(p.GetMZ())).ToList();
-            spectrum.SetPeaks(processedPeaks);
-            return spectrum;
+            ISpectrum newSpectrum = spectrum.Clone();
+            newSpectrum.SetPeaks(processedPeaks);
+            return newSpectrum;
         }
     }
 }

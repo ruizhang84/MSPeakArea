@@ -27,6 +27,13 @@ namespace MSPeakArea.Spectrum
             peaks.Clear();
         }
 
+        public ISpectrum Clone()
+        {
+            ISpectrum spec = new GeneralSpectrum(scanNum, retention);
+            spec.SetPeaks(peaks);
+            return spec;
+        }
+
         public List<IPeak> GetPeaks()
         {
             return peaks;
